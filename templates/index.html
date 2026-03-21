@@ -1,426 +1,238 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Heinz | A Maionese Feita com Tempo (Estilo Final)</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;700;800&display=swap" rel="stylesheet">
-<style>
-    /* Configuração de cores e degradê de fundo */
-    body {
-        margin: 0;
-        padding: 0;
-        /* Fundo com o degradê radial de luz explodindo */
-        background: radial-gradient(circle at center, #FF7661 0%, #FF1E1E 30%, #1E3FFF 100%);
-        /* Fonte de apoio padrão */
-        font-family: 'Montserrat', sans-serif;
-        color: #ffffff; /* TODAS AS ESCRITAS EM BRANCO */
-        overflow-x: hidden;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heinz | A Maionese Feita com Tempo (Estilo Final)</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;700;800&display=swap" rel="stylesheet">
 
-    /* Estilo para Títulos (Bebas Neue) */
-    h1, h2 {
-        font-family: 'Bebas Neue', cursive;
-        font-weight: 400;
-        text-transform: uppercase;
-        letter-spacing: -0.02em;
-    }
-
-    ::-webkit-scrollbar {
-        width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-        background: #000030; /* Fundo do scroll combinando com o azul escuro */
-    }
-    ::-webkit-scrollbar-thumb {
-        background: #FF1E1E; /* Vermelho Heinz no scrollbar */
-        border-radius: 10px;
-    }
-    #hero-section {
-        height: 250vh;
-        position: relative;
-    }
-    .sticky-container {
-        position: sticky;
-        top: 0;
-        height: 100vh;
-        width: 100%;
-        overflow: hidden;
-    }
-    canvas {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 10;
-        pointer-events: auto;
-    }
-    .ui-layer {
-        position: absolute;
-        inset: 0;
-        z-index: 20;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        pointer-events: none;
-        padding: 0 20px;
-    }
-    /* Vignette radial suave e clara sobrepondo o 3D para contraste */
-    .vignette {
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(circle at center, transparent 30%, rgba(255, 255, 255, 0.1) 100%);
-        z-index: 15;
-        pointer-events: none;
-    }
-    /* Indicador de carregamento do modelo */
-    #loading-status {
-        position: absolute;
-        bottom: 20px;
-        right: 20px;
-        background: rgba(0,0,0,0.7);
-        padding: 8px 16px;
-        border-radius: 30px;
-        font-size: 12px;
-        font-family: monospace;
-        z-index: 30;
-        pointer-events: none;
-        backdrop-filter: blur(5px);
-        color: white;
-    }
-</style>
-<script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #FF7661 0%, #FF1E1E 30%, #1E3FFF 100%);
+            font-family: 'Montserrat', sans-serif;
+            color: #ffffff;
+            overflow-x: hidden;
+            height: 200vh; /* Garante que haja scroll para as animações */
         }
-    }
-</script>
+
+        h1, h2 {
+            font-family: 'Bebas Neue', cursive;
+        }
+
+        #three-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .content-section {
+            position: relative;
+            z-index: 20;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        #scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0) translateX(-50%);}
+            40% {transform: translateY(-10px) translateX(-50%);}
+            60% {transform: translateY(-5px) translateX(-50%);}
+        }
+
+        /* Classes de utilidade para garantir visibilidade */
+        .title-main {
+            font-size: clamp(5rem, 15vw, 12rem);
+            line-height: 0.8;
+            margin-bottom: 1rem;
+        }
+    </style>
 </head>
 <body>
 
-<section id="hero-section">
-    <div class="sticky-container">
-        <canvas id="webgl-canvas"></canvas>
-        <div class="vignette"></div>
-        <div class="ui-layer">
-            <h1 id="hero-title" class="text-7xl md:text-[160px] text-center leading-[0.85] text-white drop-shadow-2xl">
-                A MAIONESE FEITA<br><span class="text-white text-8xl md:text-[200px]">COM TEMPO</span>
-            </h1>
-            <p id="hero-subtitle" class="mt-8 text-sm md:text-2xl font-extrabold tracking-[0.25em] text-white opacity-0 bg-black/60 px-10 py-4 rounded-full border border-white/40 backdrop-blur-sm">
-                UMA HOMENAGEM AO TEMPO QUE GERA PERFEIÇÃO
+    <div id="three-container"></div>
+
+    <section class="content-section" id="hero">
+        <h1 id="hero-title" class="title-main font-bold tracking-tighter opacity-0">HEINZ</h1>
+        <p id="hero-subtitle" class="text-xl md:text-2xl uppercase tracking-[0.3em] font-light opacity-0">A Maionese Feita com Tempo</p>
+        
+        <div id="scroll-indicator" class="opacity-50">
+            <p class="text-xs tracking-widest uppercase">Deslize para baixo</p>
+            <div class="w-[1px] h-12 bg-white mx-auto mt-2"></div>
+        </div>
+    </section>
+
+    <section class="content-section" id="details">
+        <div class="max-w-4xl">
+            <h2 class="text-6xl md:text-8xl mb-6">TEXTURA INCOMPARÁVEL</h2>
+            <p class="text-lg md:text-xl leading-relaxed opacity-80 font-light">
+                Cada pote de Heinz é o resultado de um processo cuidadoso, onde o tempo é o ingrediente principal para atingir a cremosidade perfeita que você já conhece e confia.
             </p>
         </div>
-        <div id="scroll-indicator" class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 flex flex-col items-center opacity-70 pointer-events-none">
-            <span class="font-bold text-[10px] tracking-widest text-white mb-2 uppercase">Role para tecer</span>
-            <div class="w-[1px] h-12 bg-gradient-to-b from-white to-transparent"></div>
-        </div>
-        <div id="loading-status">🔄 Carregando modelo 3D...</div>
-    </div>
-</section>
+    </section>
 
-<section class="h-screen flex items-center justify-center bg-[#050505] border-t border-white/10 relative z-30 px-6">
-    <div class="text-center max-w-4xl">
-        <h2 class="text-5xl md:text-7xl text-white mb-6 tracking-tight">A perfeição exige paciência</h2>
-        <p class="text-white/90 text-lg md:text-2xl font-light leading-relaxed">A mesma paciência que cria o ponto perfeito é a paciência que cultivamos para colher nossos tomates. Cada pote de maionese Heinz carrega a dedicação do tempo.</p>
-    </div>
-</section>
+    <script>
+        // --- 1. CONFIGURAÇÃO DO CENÁRIO THREE.JS ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ 
+            antialias: true, 
+            alpha: true,
+            powerPreference: "high-performance"
+        });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        document.getElementById('three-container').appendChild(renderer.domElement);
 
-<script type="module">
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-    import { CubeTextureLoader } from 'three';
+        // --- 2. ILUMINAÇÃO ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
 
-    gsap.registerPlugin(ScrollTrigger);
+        const pointLight = new THREE.PointLight(0xffffff, 1.5);
+        pointLight.position.set(10, 10, 10);
+        scene.add(pointLight);
 
-    // --- CONFIGURAÇÕES DO MODELO ---
-    const modelPath = 'pote_maionese.glb'; // Nome do seu arquivo GLB (mesma pasta)
-    let poteGroup = null;        // Grupo que conterá o modelo carregado
-    let poteWrapper = null;      // Wrapper para aplicar rotações e movimentos (mantém fio alinhado)
-    
-    // --- INICIALIZAÇÃO DA CENA ---
-    const canvas = document.getElementById('webgl-canvas');
-    const scene = new THREE.Scene();
-    scene.background = null;     // transparente para mostrar o gradiente CSS
-    scene.fog = new THREE.FogExp2(0x050505, 0.04);
+        const topLight = new THREE.DirectionalLight(0xffffff, 1);
+        topLight.position.set(0, 5, 0);
+        scene.add(topLight);
 
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 1.2, 12);
-
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.5;
-
-    // --- LUZES (ajustadas para realçar o vidro e as cores do pote) ---
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-    scene.add(ambientLight);
-
-    const mainLight = new THREE.DirectionalLight(0xfff5e6, 1.2);
-    mainLight.position.set(5, 10, 8);
-    mainLight.castShadow = true;
-    mainLight.receiveShadow = false;
-    scene.add(mainLight);
-
-    const fillLight = new THREE.DirectionalLight(0x88aaff, 0.6);
-    fillLight.position.set(-4, 2, -3);
-    scene.add(fillLight);
-
-    const backLight = new THREE.PointLight(0xffaa66, 0.5);
-    backLight.position.set(0, 1.5, -3);
-    scene.add(backLight);
-
-    const rimLight = new THREE.PointLight(0x88ccff, 0.4);
-    rimLight.position.set(1, 1, 2.5);
-    scene.add(rimLight);
-
-    // --- AMBIENTE DE REFLEXÃO (cubemap para vidro) ---
-    const cubeTextureLoader = new CubeTextureLoader();
-    cubeTextureLoader.setPath('https://threejs.org/examples/textures/cube/SwedishRoyal/');
-    const envMap = cubeTextureLoader.load([
-        'px.jpg', 'nx.jpg',
-        'py.jpg', 'ny.jpg',
-        'pz.jpg', 'nz.jpg'
-    ]);
-    scene.environment = envMap;
-
-    // --- GRUPO QUE RECEBERÁ O MODELO (para animações) ---
-    poteWrapper = new THREE.Group();
-    scene.add(poteWrapper);
-
-    // --- FIO (CORDÃO) PROCEDURAL ---
-    const points = [];
-    const turns = 8;
-    const height = 4.5;
-    const radius = 1.6;
-
-    for (let i = 0; i <= 200; i++) {
-        const t = i / 200;
-        const angle = t * Math.PI * 2 * turns;
-        const y = (height / 2) - (t * height);
-        const currentRadius = radius + (Math.sin(t * Math.PI) * 0.1);
-        points.push(new THREE.Vector3(
-            Math.cos(angle) * currentRadius,
-            y,
-            Math.sin(angle) * currentRadius
-        ));
-    }
-
-    const curve = new THREE.CatmullRomCurve3(points);
-    const tubeGeo = new THREE.TubeGeometry(curve, 300, 0.08, 12, false);
-    const yarnMat = new THREE.MeshStandardMaterial({ 
-        color: 0xFDF6E3,
-        roughness: 0.95,
-        metalness: 0.0
-    });
-    const yarnMesh = new THREE.Mesh(tubeGeo, yarnMat);
-    scene.add(yarnMesh);
-
-    const totalYarnIndices = tubeGeo.index.count;
-    tubeGeo.setDrawRange(0, 0);
-
-    // --- CARREGAR MODELO GLB ---
-    const loader = new GLTFLoader();
-    let modeloCarregado = false;
-
-    loader.load(modelPath, 
-        (gltf) => {
-            console.log('✅ Modelo carregado:', gltf);
-            const model = gltf.scene;
+        // --- 3. CARREGAMENTO DO POTE (GLB) ---
+        let poteModel;
+        const loader = new THREE.GLTFLoader();
+        
+        // Caminho obrigatório para funcionar com o seu app.py e Docker
+        loader.load('/static/pote_maionese.glb.glb', function(gltf) {
+            poteModel = gltf.scene;
             
-            // Ajustar escala e posição para que o pote fique compatível com o fio (altura alvo ~4.0)
-            const box = new THREE.Box3().setFromObject(model);
-            const size = box.getSize(new THREE.Vector3());
-            const targetHeight = 4.2; // altura desejada
-            const scaleFactor = targetHeight / size.y;
-            model.scale.set(scaleFactor, scaleFactor, scaleFactor);
+            // Centraliza o modelo dentro do seu próprio eixo
+            const box = new THREE.Box3().setFromObject(poteModel);
+            const center = box.getCenter(new THREE.Vector3());
+            poteModel.position.sub(center);
             
-            // Centralizar na base e ajustar Y para que a base fique no chão virtual (y = -0.6)
-            const newBox = new THREE.Box3().setFromObject(model);
-            const minY = newBox.min.y;
-            model.position.y = -minY - 0.65; // alinhar com a base do fio
+            // Cria um grupo para facilitar a manipulação GSAP
+            const group = new THREE.Group();
+            group.add(poteModel);
+            scene.add(group);
             
-            // Aplicar materiais personalizados (vidro, tampa, rótulo)
-            model.traverse((child) => {
-                if (child.isMesh) {
-                    const nome = child.name.toLowerCase();
-                    console.log(`Mesh: ${child.name}`);
-                    
-                    // Corpo de vidro
-                    if (nome.includes('jar') || nome.includes('body') || nome.includes('glass') || nome.includes('pote') || 
-                        (!nome.includes('lid') && !nome.includes('tampa') && !nome.includes('cap') && !nome.includes('label') && !nome.includes('rotulo'))) {
-                        const glassMat = new THREE.MeshPhysicalMaterial({
-                            color: 0xc8e4ff,
-                            metalness: 1.0,
-                            roughness: 0.12,
-                            clearcoat: 1.0,
-                            clearcoatRoughness: 0.05,
-                            reflectivity: 0.5,
-                            ior: 1.5,
-                            transmission: 0.85,
-                            thickness: 0.5,
-                            envMap: envMap,
-                            envMapIntensity: 1.2,
-                            transparent: true,
-                            side: THREE.DoubleSide
-                        });
-                        child.material = glassMat;
-                    }
-                    // Tampa (azul Heinz)
-                    else if (nome.includes('lid') || nome.includes('tampa') || nome.includes('cap')) {
-                        const lidMat = new THREE.MeshStandardMaterial({
-                            color: 0x1E3FFF,
-                            roughness: 0.4,
-                            metalness: 0.2,
-                            emissive: 0x001133,
-                            emissiveIntensity: 0.1
-                        });
-                        child.material = lidMat;
-                    }
-                    // Rótulo (vermelho Heinz)
-                    else if (nome.includes('label') || nome.includes('rotulo') || nome.includes('sticker')) {
-                        const labelMat = new THREE.MeshStandardMaterial({
-                            color: 0xFF1E1E,
-                            roughness: 0.5,
-                            metalness: 0.05
-                        });
-                        child.material = labelMat;
-                    }
-                    // Outros materiais (mantém original com leve ajuste)
-                    else {
-                        const defaultMat = new THREE.MeshStandardMaterial({
-                            color: 0xdddddd,
-                            roughness: 0.5,
-                            metalness: 0.2
-                        });
-                        child.material = defaultMat;
-                    }
-                    
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                }
+            // Escala inicial
+            group.scale.set(3.5, 3.5, 3.5);
+            group.position.y = 0;
+
+            // Integração com GSAP após carregar
+            initAnimations(group);
+            
+        }, undefined, function(error) {
+            console.error('Erro crítico no carregamento do arquivo 3D:', error);
+        });
+
+        camera.position.z = 5;
+
+        // --- 4. ANIMAÇÕES GSAP ---
+        function initAnimations(modelGroup) {
+            gsap.registerPlugin(ScrollTrigger);
+
+            // Timeline de entrada
+            const masterTl = gsap.timeline();
+            
+            masterTl.to("#hero-title", { 
+                opacity: 1, 
+                y: -30, 
+                duration: 1.5, 
+                ease: "expo.out" 
             });
             
-            poteGroup = model;
-            poteWrapper.add(poteGroup);
-            modeloCarregado = true;
-            document.getElementById('loading-status').textContent = '✅ Modelo carregado!';
-            setTimeout(() => {
-                document.getElementById('loading-status').style.opacity = '0';
-            }, 2000);
-        },
-        (xhr) => {
-            const percent = Math.floor((xhr.loaded / xhr.total) * 100);
-            document.getElementById('loading-status').textContent = `🔄 Carregando modelo: ${percent}%`;
-        },
-        (error) => {
-            console.error('❌ Erro ao carregar o modelo:', error);
-            document.getElementById('loading-status').innerHTML = '❌ Erro: modelo não encontrado.<br>Verifique se o arquivo GLB está na mesma pasta.';
-            document.getElementById('loading-status').style.backgroundColor = 'rgba(255,0,0,0.8)';
+            masterTl.to("#hero-subtitle", { 
+                opacity: 1, 
+                y: -15, 
+                duration: 1.2, 
+                ease: "power2.out" 
+            }, "-=1");
+
+            // Rotação contínua e reação ao Scroll
+            gsap.to(modelGroup.rotation, {
+                y: Math.PI * 2,
+                scrollTrigger: {
+                    trigger: "body",
+                    start: "top top",
+                    end: "bottom bottom",
+                    scrub: 1.5
+                }
+            });
+
+            // Movimentação para a lateral na segunda seção
+            gsap.to(modelGroup.position, {
+                x: -2.5,
+                y: 0.5,
+                scrollTrigger: {
+                    trigger: "#details",
+                    start: "top bottom",
+                    end: "top center",
+                    scrub: 1
+                }
+            });
+
+            // Mudança de escala no scroll
+            gsap.to(modelGroup.scale, {
+                x: 2,
+                y: 2,
+                z: 2,
+                scrollTrigger: {
+                    trigger: "#details",
+                    start: "top bottom",
+                    end: "top center",
+                    scrub: 1
+                }
+            });
         }
-    );
 
-    // --- CONTROLES DE CÂMERA (orbit com zoom desativado) ---
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableZoom = false;
-    controls.enablePan = false;
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-
-    // --- ANIMAÇÕES COM SCROLL ---
-    const animProps = { drawProgress: 0, jarRotation: 0 };
-    const tl = gsap.timeline({
-        scrollTrigger: {
-            trigger: "#hero-section",
-            start: "top top",
-            end: "bottom bottom",
-            scrub: 1
-        }
-    });
-
-    // Desenho do fio
-    tl.to(animProps, {
-        drawProgress: 1,
-        ease: "none",
-        onUpdate: () => {
-            const drawCount = Math.floor(totalYarnIndices * animProps.drawProgress);
-            tubeGeo.setDrawRange(0, drawCount);
-        }
-    }, 0);
-
-    // Rotação do pote
-    tl.to(animProps, {
-        jarRotation: Math.PI * 2,
-        ease: "none",
-        onUpdate: () => {
-            if (poteWrapper) poteWrapper.rotation.y = animProps.jarRotation;
-        }
-    }, 0);
-
-    // Animações de UI
-    gsap.set("#hero-title", { y: 200, opacity: 0 });
-    tl.to("#hero-title", {
-        y: 0,
-        opacity: 1,
-        duration: 0.4,
-        ease: "power3.out"
-    }, 0.2);
-
-    tl.to("#hero-subtitle", {
-        opacity: 1,
-        y: -15,
-        duration: 0.3,
-        ease: "power2.out"
-    }, 0.5);
-
-    tl.to("#scroll-indicator", {
-        opacity: 0,
-        duration: 0.1
-    }, 0);
-
-    // --- EFEITO PARALLAX COM MOUSE ---
-    let mouseX = 0;
-    let mouseY = 0;
-    document.addEventListener('mousemove', (e) => {
-        mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-        mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-    });
-
-    // --- ANIMAÇÃO CONTÍNUA ---
-    function animate() {
-        requestAnimationFrame(animate);
-        
-        if (poteWrapper) {
-            // Movimento suave do pote seguindo o mouse
-            poteWrapper.rotation.x += (mouseY * 0.15 - poteWrapper.rotation.x) * 0.05;
-            poteWrapper.position.x += (mouseX * 0.6 - poteWrapper.position.x) * 0.05;
+        // --- 5. RENDER LOOP ---
+        function animate() {
+            requestAnimationFrame(animate);
             
-            // O fio acompanha o pote (posição e rotação)
-            yarnMesh.position.x = poteWrapper.position.x;
-            yarnMesh.rotation.x = poteWrapper.rotation.x;
-            yarnMesh.rotation.y = poteWrapper.rotation.y;
+            // Rotação suave constante (idle)
+            if (poteModel) {
+                poteModel.rotation.y += 0.003;
+            }
+            
+            renderer.render(scene, camera);
         }
-        
-        controls.update();
-        renderer.render(scene, camera);
-    }
-    
-    animate();
 
-    // --- AJUSTE DE TAMANHO DA JANELA ---
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-</script>
+        animate();
+
+        // --- 6. REDIMENSIONAMENTO ---
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+    </script>
 </body>
 </html>
