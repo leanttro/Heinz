@@ -2,113 +2,16 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Heinz Crochê | A Maionese Feita com Tempo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+<title>Heinz Labs | Experiência Imersiva</title>
+<!-- Tailwind -->
 <script src="https://cdn.tailwindcss.com"></script>
+<!-- Lucide (ícones) -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- GSAP & ScrollTrigger -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;700;800&display=swap" rel="stylesheet">
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-        background: radial-gradient(circle at center, #FF7661 0%, #FF1E1E 30%, #1E3FFF 100%);
-        font-family: 'Montserrat', sans-serif;
-        color: white;
-        overflow-x: hidden;
-    }
-    h1, h2 {
-        font-family: 'Bebas Neue', cursive;
-        letter-spacing: -0.02em;
-        text-transform: uppercase;
-    }
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: #000030; }
-    ::-webkit-scrollbar-thumb { background: #FF1E1E; border-radius: 10px; }
-    #hero-section {
-        height: 250vh;
-        position: relative;
-    }
-    .sticky-container {
-        position: sticky;
-        top: 0;
-        height: 100vh;
-        width: 100%;
-        overflow: hidden;
-    }
-    canvas {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 10;
-        pointer-events: auto;
-    }
-    .ui-layer {
-        position: absolute;
-        inset: 0;
-        z-index: 20;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        pointer-events: none;
-        padding: 0 20px;
-        text-align: center;
-    }
-    .vignette {
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(circle at center, transparent 30%, rgba(255,255,255,0.1) 100%);
-        z-index: 15;
-        pointer-events: none;
-    }
-    #loading-status {
-        position: absolute;
-        bottom: 20px;
-        right: 20px;
-        background: rgba(0,0,0,0.7);
-        padding: 8px 16px;
-        border-radius: 30px;
-        font-size: 12px;
-        font-family: monospace;
-        z-index: 30;
-        backdrop-filter: blur(5px);
-        color: white;
-    }
-    .crochet-btn {
-        pointer-events: auto;
-        background: white;
-        color: #FF1E1E;
-        font-weight: 800;
-        padding: 14px 32px;
-        border-radius: 50px;
-        text-transform: uppercase;
-        font-size: 14px;
-        letter-spacing: 2px;
-        transition: all 0.3s;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        border: 2px solid white;
-    }
-    .crochet-btn:hover {
-        background: #FF1E1E;
-        color: white;
-        transform: scale(1.05);
-        border-color: #FF1E1E;
-    }
-    .floating-crochet {
-        position: fixed;
-        pointer-events: none;
-        z-index: 50;
-        width: 30px;
-        height: 30px;
-        background-size: contain;
-        background-repeat: no-repeat;
-        opacity: 0;
-        transition: opacity 0.5s;
-    }
-</style>
+<!-- Three.js -->
 <script type="importmap">
     {
         "imports": {
@@ -117,364 +20,597 @@
         }
     }
 </script>
+<!-- CodeMirror (editor de código) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<!-- Fonte personalizada -->
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;700;800&display=swap" rel="stylesheet">
+<style>
+    :root { --heinz-red: #FF1E1E; --heinz-blue: #1E3FFF; }
+    body {
+        background-color: #050505;
+        font-family: 'Montserrat', sans-serif;
+        color: white;
+        overflow-x: hidden;
+        margin: 0;
+    }
+    h1, h2, .font-display {
+        font-family: 'Bebas Neue', cursive;
+        text-transform: uppercase;
+        letter-spacing: -0.02em;
+    }
+    /* Loader overlay */
+    #loader-overlay {
+        position: fixed;
+        inset: 0;
+        background: #000;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        transition: opacity 1s;
+    }
+    .splash-letter {
+        display: inline-block;
+        font-size: 8rem;
+        font-weight: 800;
+        font-family: 'Bebas Neue', cursive;
+        color: white;
+        text-shadow: 0 0 20px var(--heinz-red);
+        animation: splash 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        opacity: 0;
+        transform: translateY(100px);
+    }
+    @keyframes splash {
+        0% { opacity: 0; transform: translateY(100px) scale(0.5); filter: blur(10px); }
+        70% { opacity: 1; transform: translateY(-10px) scale(1.1); }
+        100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+    /* Glass trail */
+    .glass-trail {
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(12px);
+        pointer-events: none;
+        transform: translate(-50%, -50%) scale(0.3);
+        opacity: 1;
+        transition: transform 1.2s, opacity 1.2s;
+        z-index: 50;
+    }
+    /* Marquee */
+    .client-marquee-wrapper {
+        display: flex;
+        width: 100%;
+        overflow: hidden;
+        background: #000;
+        padding: 60px 0;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .client-marquee-track {
+        display: flex;
+        gap: 100px;
+        animation: scrollMarquee 35s linear infinite;
+        padding-right: 100px;
+    }
+    .client-marquee-track img {
+        height: 75px;
+        width: auto;
+        filter: brightness(0.7) sepia(1) hue-rotate(-10deg);
+        transition: all 0.3s;
+    }
+    .client-marquee-track img:hover {
+        filter: none;
+        transform: scale(1.05);
+    }
+    @keyframes scrollMarquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-100%); }
+    }
+    /* Botão 3D */
+    .btn-3d {
+        transform-style: preserve-3d;
+        transition: all 0.2s;
+    }
+    .btn-3d:active {
+        transform: scale(0.95) translateZ(-10px);
+    }
+    /* Formulário 3D */
+    .form-3d {
+        transform: perspective(1000px) rotateY(10deg) rotateX(5deg);
+        transition: transform 0.4s;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .form-3d:hover {
+        transform: perspective(1000px) rotateY(0deg) rotateX(0deg);
+    }
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: var(--heinz-red); border-radius: 10px; }
+</style>
 </head>
-<body>
+<body style="overflow: hidden;">
 
-<section id="hero-section">
-    <div class="sticky-container">
-        <canvas id="webgl-canvas"></canvas>
-        <div class="vignette"></div>
-        <div class="ui-layer">
-            <h1 id="hero-title" class="text-7xl md:text-[160px] leading-[0.85] drop-shadow-2xl">
-                A MAIONESE FEITA<br><span class="text-8xl md:text-[200px]">COM TEMPO</span>
-            </h1>
-            <p id="hero-subtitle" class="mt-8 text-sm md:text-2xl font-extrabold tracking-[0.25em] bg-black/60 px-10 py-4 rounded-full border border-white/40 backdrop-blur-sm opacity-0">
-                CROCHÊ QUE TEMPERA
-            </p>
-            <div id="cta-button" class="mt-12 opacity-0">
-                <a href="#receita" class="crochet-btn">BAIXAR PASSO A PASSO</a>
+<!-- LOADER CINEMATOGRÁFICO -->
+<div id="loader-overlay">
+    <div id="loader-text" class="text-center">
+        <div id="heinz-letters"></div>
+        <p id="loader-sub" class="text-white text-xl mt-8 opacity-0 tracking-widest">A receita está prestes a mudar.</p>
+    </div>
+    <audio id="pop-sound" preload="auto">
+        <source src="https://www.soundjay.com/misc/sounds/pop-01.mp3" type="audio/mpeg">
+    </audio>
+</div>
+
+<!-- CONTEÚDO PRINCIPAL (inicialmente oculto) -->
+<main id="main-content" style="display: none;">
+
+<!-- HEADER -->
+<header class="fixed top-0 w-full z-50 py-4 bg-black/50 backdrop-blur-md border-b border-white/10">
+    <div class="container mx-auto px-6 flex justify-between items-center">
+        <img src="https://res.cloudinary.com/dzcaxmbjn/image/upload/v1773591878/presentes_180_x_50_px_720_x_200_px_1440_x_264_px_1_azuhgq.png" class="h-10 md:h-12 object-contain" alt="Heinz">
+        <a href="#contato" class="bg-white text-black px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider hover:scale-105 transition">Fale Conosco</a>
+    </div>
+</header>
+
+<!-- 1. HERO SECTION 3D INTERATIVA -->
+<section id="hero-3d" class="relative w-full h-screen overflow-hidden bg-black">
+    <canvas id="hero-canvas" class="absolute inset-0 w-full h-full z-10"></canvas>
+    <div class="absolute inset-0 z-20 flex flex-col items-center justify-center text-center pointer-events-none">
+        <h1 id="hero-title-main" class="text-7xl md:text-9xl font-display text-white drop-shadow-2xl opacity-0 translate-y-20">Heinz <span class="text-[var(--heinz-red)]">Labs</span></h1>
+        <p id="hero-sub-main" class="text-xl md:text-3xl mt-4 tracking-widest opacity-0 translate-y-10">Experimente o futuro do sabor – código aberto para devs.</p>
+    </div>
+    <div id="hero-particles" class="absolute inset-0 z-15 pointer-events-none"></div>
+    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-30 animate-bounce">
+        <i data-lucide="chevron-down" class="w-8 h-8 text-white/70"></i>
+    </div>
+</section>
+
+<!-- 2. SEÇÃO "CAMPANHA REVELADA" (VÍDEO + PDV) -->
+<section class="py-24 bg-gradient-to-b from-black to-[#0a0a0a] relative overflow-hidden">
+    <div class="container mx-auto px-6 max-w-7xl">
+        <h2 class="text-5xl md:text-7xl font-display text-center text-white mb-16">Campanha Revelada</h2>
+        <div class="flex flex-col lg:flex-row gap-12 items-stretch">
+            <!-- Vídeo com cortinas (efeito cinema) -->
+            <div class="relative flex-1 aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-white/20">
+                <div id="curtain-left" class="absolute top-0 left-0 w-1/2 h-full bg-[#8B0000] z-20 transform -translate-x-full transition-transform duration-1000"></div>
+                <div id="curtain-right" class="absolute top-0 right-0 w-1/2 h-full bg-[#8B0000] z-20 transform translate-x-full transition-transform duration-1000"></div>
+                <iframe id="campaign-video" width="100%" height="100%" src="https://www.youtube.com/embed/DWHzTfPFQOQ?autoplay=0&mute=0" frameborder="0" allowfullscreen class="w-full h-full"></iframe>
+            </div>
+            <!-- Ícones PDV interativos -->
+            <div class="flex-1 grid grid-cols-2 gap-6 content-start">
+                <div class="pdv-item bg-white/5 border border-white/10 rounded-xl p-6 text-center cursor-pointer hover:border-[var(--heinz-red)] transition-all group">
+                    <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto text-[var(--heinz-red)] mb-4"></i>
+                    <h3 class="text-xl font-bold">PDV Supermercados</h3>
+                    <div class="mt-4 opacity-0 group-hover:opacity-100 transition-all">
+                        <img src="https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=400&auto=format" class="rounded-lg shadow-lg" alt="PDV">
+                    </div>
+                </div>
+                <div class="pdv-item bg-white/5 border border-white/10 rounded-xl p-6 text-center cursor-pointer hover:border-[var(--heinz-red)] transition-all group">
+                    <i data-lucide="store" class="w-12 h-12 mx-auto text-[var(--heinz-red)] mb-4"></i>
+                    <h3 class="text-xl font-bold">PDV Lojas de Conveniência</h3>
+                    <div class="mt-4 opacity-0 group-hover:opacity-100 transition-all">
+                        <img src="https://images.unsplash.com/photo-1604719312566-8912e9c8a213?w=400&auto=format" class="rounded-lg shadow-lg" alt="PDV">
+                    </div>
+                </div>
+                <div class="pdv-item bg-white/5 border border-white/10 rounded-xl p-6 text-center cursor-pointer hover:border-[var(--heinz-red)] transition-all group">
+                    <i data-lucide="truck" class="w-12 h-12 mx-auto text-[var(--heinz-red)] mb-4"></i>
+                    <h3 class="text-xl font-bold">PDV Food Service</h3>
+                    <div class="mt-4 opacity-0 group-hover:opacity-100 transition-all">
+                        <img src="https://images.unsplash.com/photo-1552566626-52f8b828add9?w=400&auto=format" class="rounded-lg shadow-lg" alt="PDV">
+                    </div>
+                </div>
+                <div class="pdv-item bg-white/5 border border-white/10 rounded-xl p-6 text-center cursor-pointer hover:border-[var(--heinz-red)] transition-all group">
+                    <i data-lucide="heart" class="w-12 h-12 mx-auto text-[var(--heinz-red)] mb-4"></i>
+                    <h3 class="text-xl font-bold">PDV Edição Limitada</h3>
+                    <div class="mt-4 opacity-0 group-hover:opacity-100 transition-all">
+                        <img src="https://images.unsplash.com/photo-1583845112203-2932991a9a5b?w=400&auto=format" class="rounded-lg shadow-lg" alt="PDV">
+                    </div>
+                </div>
             </div>
         </div>
-        <div id="scroll-indicator" class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 flex flex-col items-center opacity-70 pointer-events-none">
-            <span class="font-bold text-[10px] tracking-widest mb-2 uppercase">Role para tecer</span>
-            <div class="w-[1px] h-12 bg-gradient-to-b from-white to-transparent"></div>
-        </div>
-        <div id="loading-status">🔄 Carregando modelo 3D...</div>
     </div>
 </section>
 
-<section id="receita" class="min-h-screen bg-[#050505] border-t border-white/10 relative z-30 flex items-center justify-center py-24 px-6">
-    <div class="max-w-4xl text-center">
-        <h2 class="text-5xl md:text-7xl text-white mb-6 tracking-tight">A receita que une gerações</h2>
-        <p class="text-white/80 text-lg md:text-xl leading-relaxed mb-12">Cada ponto de crochê carrega paciência. Cada pote de maionese Heinz carrega o cuidado de quem espera o momento perfeito. Baixe o passo a passo e faça parte dessa homenagem.</p>
-        <div class="flex flex-wrap justify-center gap-6">
-            <a href="#" id="download-pdf" class="crochet-btn bg-transparent text-white border-white hover:bg-white hover:text-[#FF1E1E]">📄 PDF Completo</a>
-            <a href="https://www.instagram.com/heinz_brasil" target="_blank" class="crochet-btn bg-transparent text-white border-white hover:bg-white hover:text-[#FF1E1E]">📸 Compartilhe no Instagram</a>
+<!-- 3. SEÇÃO "PRODUTOS" – CARROSSEL HORIZONTAL -->
+<section class="py-24 bg-black relative overflow-hidden">
+    <div class="container mx-auto px-6">
+        <h2 class="text-5xl md:text-7xl font-display text-center text-white mb-16">Produtos da Campanha</h2>
+    </div>
+    <div class="horizontal-scroll flex overflow-x-auto gap-8 px-6 md:px-16 pb-12 scroll-smooth" style="scrollbar-width: thin;">
+        <!-- Card 1 -->
+        <div class="product-card flex-none w-[300px] md:w-[350px] bg-gradient-to-br from-[#1a1a1a] to-black rounded-2xl overflow-hidden border border-white/10 hover:border-[var(--heinz-red)] transition-all cursor-pointer group">
+            <div class="relative aspect-square overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1589923188900-85aae8ee9f67?w=400&auto=format" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                    <span class="bg-white text-black px-4 py-2 rounded-full text-sm font-bold">Ver no PDV</span>
+                </div>
+            </div>
+            <div class="p-5">
+                <h3 class="text-2xl font-bold">Heinz Ketchup Edição Limitada</h3>
+                <p class="text-white/60 text-sm mt-1">Sabor defumado com toque artesanal</p>
+            </div>
+        </div>
+        <!-- Card 2 -->
+        <div class="product-card flex-none w-[300px] md:w-[350px] bg-gradient-to-br from-[#1a1a1a] to-black rounded-2xl overflow-hidden border border-white/10 hover:border-[var(--heinz-red)] transition-all cursor-pointer group">
+            <div class="relative aspect-square overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1595039838765-2f3d0d8f8c8c?w=400&auto=format" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                    <span class="bg-white text-black px-4 py-2 rounded-full text-sm font-bold">Ver no PDV</span>
+                </div>
+            </div>
+            <div class="p-5">
+                <h3 class="text-2xl font-bold">Heinz 57</h3>
+                <p class="text-white/60 text-sm mt-1">O clássico reinventado para a nova geração</p>
+            </div>
+        </div>
+        <!-- Card 3 -->
+        <div class="product-card flex-none w-[300px] md:w-[350px] bg-gradient-to-br from-[#1a1a1a] to-black rounded-2xl overflow-hidden border border-white/10 hover:border-[var(--heinz-red)] transition-all cursor-pointer group">
+            <div class="relative aspect-square overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1567696911980-2ee69a3b2f5b?w=400&auto=format" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                    <span class="bg-white text-black px-4 py-2 rounded-full text-sm font-bold">Ver no PDV</span>
+                </div>
+            </div>
+            <div class="p-5">
+                <h3 class="text-2xl font-bold">Novo Molho Picante</h3>
+                <p class="text-white/60 text-sm mt-1">Equilíbrio perfeito entre ardência e sabor</p>
+            </div>
         </div>
     </div>
 </section>
+
+<!-- 4. DESAFIO DEV: "CÓDIGO KETCHUP" -->
+<section class="py-24 bg-gradient-to-t from-black to-[#0a0a0a] relative">
+    <div class="container mx-auto px-6 max-w-6xl">
+        <h2 class="text-5xl md:text-7xl font-display text-center text-white mb-6">Desafio Dev: Código Ketchup</h2>
+        <p class="text-center text-white/70 max-w-2xl mx-auto mb-12">Crie sua própria receita de molho ajustando cor, viscosidade e sabor. Execute e veja o resultado em 3D.</p>
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Editor de código -->
+            <div class="flex-1">
+                <textarea id="code-editor" class="w-full h-80 bg-black/80 border border-white/20 rounded-lg p-4 font-mono text-sm text-green-400" placeholder="// Escreva seu código JS aqui...
+// Exemplo:
+color = [255, 30, 30];
+viscosity = 0.8;
+flavor = 'picante';">// Crie seu molho!
+color = [255, 30, 30];
+viscosity = 0.8;
+flavor = 'picante';</textarea>
+                <div class="mt-4 flex gap-4">
+                    <button id="run-code" class="bg-[var(--heinz-red)] px-6 py-3 rounded-full font-bold uppercase tracking-wider hover:scale-105 transition">Executar</button>
+                    <button id="share-code" class="bg-white text-black px-6 py-3 rounded-full font-bold uppercase tracking-wider hover:scale-105 transition">Compartilhar Resultado</button>
+                </div>
+            </div>
+            <!-- Visualização 3D do molho -->
+            <div class="flex-1 bg-black/50 rounded-xl border border-white/10 p-4">
+                <canvas id="sauce-canvas" class="w-full h-80 rounded-lg"></canvas>
+                <p id="sauce-flavor" class="mt-2 text-center text-white/80 text-sm"></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 5. SEÇÃO "FALE COM UM HEINZIANO" – FORMULÁRIO 3D -->
+<section class="py-24 bg-black relative" id="contato">
+    <div class="container mx-auto px-6 max-w-5xl">
+        <div class="form-3d bg-white/5 backdrop-blur-md border border-white/20 rounded-2xl p-8 md:p-12">
+            <h3 class="text-4xl font-display text-center mb-6">Fale com um Heinziano</h3>
+            <form id="lead-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <input type="text" name="nome" placeholder="Seu nome" required class="bg-black/50 border border-white/20 rounded-lg p-4 text-white focus:border-[var(--heinz-red)]">
+                <input type="email" name="email" placeholder="Seu e-mail" required class="bg-black/50 border border-white/20 rounded-lg p-4 text-white focus:border-[var(--heinz-red)]">
+                <input type="text" name="cargo" placeholder="Cargo (ex: dev, designer)" class="bg-black/50 border border-white/20 rounded-lg p-4 text-white focus:border-[var(--heinz-red)]">
+                <select name="molho" class="bg-black/50 border border-white/20 rounded-lg p-4 text-white">
+                    <option>Ketchup</option>
+                    <option>Maionese</option>
+                    <option>Mostarda</option>
+                    <option>Barbecue</option>
+                </select>
+                <div class="md:col-span-2">
+                    <button type="submit" class="w-full bg-[var(--heinz-red)] py-4 rounded-full font-bold uppercase tracking-wider hover:scale-105 transition">Enviar e receber dicas</button>
+                </div>
+            </form>
+            <div id="form-success" class="hidden mt-6 text-center text-green-400 font-bold">✅ Dicas enviadas! Confira seu e-mail.</div>
+        </div>
+    </div>
+</section>
+
+<!-- 6. SEÇÃO SOCIAL PROOF + INSTAGRAM WALL -->
+<section class="client-marquee-wrapper">
+    <div class="client-marquee-track" id="marquee-track">
+        <img src="https://res.cloudinary.com/dzcaxmbjn/image/upload/v1773591878/presentes_180_x_50_px_720_x_200_px_1440_x_264_px_1_azuhgq.png" alt="Parceiro 1">
+        <img src="https://res.cloudinary.com/dzcaxmbjn/image/upload/v1773591878/presentes_180_x_50_px_720_x_200_px_1440_x_264_px_1_azuhgq.png" alt="Parceiro 2">
+        <img src="https://res.cloudinary.com/dzcaxmbjn/image/upload/v1773591878/presentes_180_x_50_px_720_x_200_px_1440_x_264_px_1_azuhgq.png" alt="Parceiro 3">
+        <img src="https://res.cloudinary.com/dzcaxmbjn/image/upload/v1773591878/presentes_180_x_50_px_720_x_200_px_1440_x_264_px_1_azuhgq.png" alt="Parceiro 4">
+    </div>
+    <div class="client-marquee-track" aria-hidden="true">
+        <img src="https://res.cloudinary.com/dzcaxmbjn/image/upload/v1773591878/presentes_180_x_50_px_720_x_200_px_1440_x_264_px_1_azuhgq.png" alt="Parceiro 1">
+        <img src="https://res.cloudinary.com/dzcaxmbjn/image/upload/v1773591878/presentes_180_x_50_px_720_x_200_px_1440_x_264_px_1_azuhgq.png" alt="Parceiro 2">
+        <img src="https://res.cloudinary.com/dzcaxmbjn/image/upload/v1773591878/presentes_180_x_50_px_720_x_200_px_1440_x_264_px_1_azuhgq.png" alt="Parceiro 3">
+        <img src="https://res.cloudinary.com/dzcaxmbjn/image/upload/v1773591878/presentes_180_x_50_px_720_x_200_px_1440_x_264_px_1_azuhgq.png" alt="Parceiro 4">
+    </div>
+</section>
+
+<section class="py-24 bg-black border-t border-white/10">
+    <div class="container mx-auto px-6">
+        <h2 class="text-4xl md:text-6xl font-display text-center text-white mb-12">#HeinzLabs no Instagram</h2>
+        <div class="flex flex-wrap justify-center gap-6">
+            <div class="w-[320px] h-[540px] bg-white/5 rounded-xl overflow-hidden border border-white/10">
+                <iframe src="https://www.instagram.com/p/DWHzTfPFQOQ/embed" width="320" height="540" frameborder="0" scrolling="no" class="w-full h-full"></iframe>
+            </div>
+            <div class="w-[320px] h-[540px] bg-white/5 rounded-xl overflow-hidden border border-white/10">
+                <iframe src="https://www.instagram.com/p/DWHzTfPFQOQ/embed" width="320" height="540" frameborder="0" scrolling="no" class="w-full h-full"></iframe>
+            </div>
+            <div class="w-[320px] h-[540px] bg-white/5 rounded-xl overflow-hidden border border-white/10">
+                <iframe src="https://www.instagram.com/p/DWHzTfPFQOQ/embed" width="320" height="540" frameborder="0" scrolling="no" class="w-full h-full"></iframe>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER ANIMADO -->
+<footer class="py-20 text-center relative bg-black border-t border-white/10" id="footer">
+    <div class="container mx-auto px-6">
+        <h2 id="footer-heading" class="text-4xl md:text-7xl font-display mb-12">Vamos criar algo junto com a <span class="text-[var(--heinz-red)]">Heinz</span>?</h2>
+        <div class="flex flex-wrap justify-center gap-8 mb-16">
+            <a href="https://wa.me/5511999999999" class="inline-flex items-center gap-2 text-white/80 hover:text-white border-b border-white/20 pb-1">WhatsApp</a>
+            <a href="https://www.instagram.com/heinz_brasil" target="_blank" class="inline-flex items-center gap-2 text-white/80 hover:text-white border-b border-white/20 pb-1">Instagram</a>
+        </div>
+        <p class="text-xs text-white/30">© 2026 Heinz Labs. Todos os direitos reservados.</p>
+    </div>
+</footer>
+
+</main>
 
 <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-    import { CubeTextureLoader } from 'three';
 
-    gsap.registerPlugin(ScrollTrigger);
-
-    // --- Caminhos dos assets (SUBSTITUA PELOS URLs DO CLOUDINARY) ---
-    const textureUrls = {
-        labelFront: 'https://res.cloudinary.com/demo/image/upload/v123456/heinz_label.png',   // <-- VOCÊ SUBSTITUI
-        labelBack: 'https://res.cloudinary.com/demo/image/upload/v123456/heinz_back_label.png',
-        yarnPattern: 'https://res.cloudinary.com/demo/image/upload/v123456/yarn_texture.png',
-        crochetParticle: 'https://res.cloudinary.com/demo/image/upload/v123456/crochet_particle.png'
-    };
-    const modelPath = '/static/pote_maionese.glb.glb';
-
-    let poteGroup = null;
-    let poteWrapper = null;
-    let labelTexture = null;
-
-    // --- Cena Three.js ---
-    const canvas = document.getElementById('webgl-canvas');
-    const scene = new THREE.Scene();
-    scene.background = null;
-    scene.fog = new THREE.FogExp2(0x050505, 0.04);
-
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 1.2, 12);
-
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.5;
-
-    // --- Luzes ---
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(ambientLight);
-
-    const mainLight = new THREE.DirectionalLight(0xfff5e6, 1.2);
-    mainLight.position.set(5, 10, 8);
-    mainLight.castShadow = true;
-    scene.add(mainLight);
-
-    const fillLight = new THREE.DirectionalLight(0x88aaff, 0.6);
-    fillLight.position.set(-4, 2, -3);
-    scene.add(fillLight);
-
-    const backLight = new THREE.PointLight(0xffaa66, 0.5);
-    backLight.position.set(0, 1.5, -3);
-    scene.add(backLight);
-
-    const rimLight = new THREE.PointLight(0x88ccff, 0.4);
-    rimLight.position.set(1, 1, 2.5);
-    scene.add(rimLight);
-
-    // --- Cubemap para reflexões ---
-    const cubeTextureLoader = new CubeTextureLoader();
-    cubeTextureLoader.setPath('https://threejs.org/examples/textures/cube/SwedishRoyal/');
-    const envMap = cubeTextureLoader.load(['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg']);
-    scene.environment = envMap;
-
-    // --- Grupo do modelo ---
-    poteWrapper = new THREE.Group();
-    scene.add(poteWrapper);
-
-    // --- FIO DE CROCHÊ (procedural) ---
-    const points = [];
-    const turns = 8;
-    const height = 4.5;
-    const radius = 1.6;
-    for (let i = 0; i <= 200; i++) {
-        const t = i / 200;
-        const angle = t * Math.PI * 2 * turns;
-        const y = (height / 2) - (t * height);
-        const currentRadius = radius + (Math.sin(t * Math.PI) * 0.1);
-        points.push(new THREE.Vector3(
-            Math.cos(angle) * currentRadius,
-            y,
-            Math.sin(angle) * currentRadius
-        ));
+    // --- LOADER CINEMATOGRÁFICO ---
+    const loaderOverlay = document.getElementById('loader-overlay');
+    const lettersContainer = document.getElementById('heinz-letters');
+    const word = "HEINZ";
+    for (let i = 0; i < word.length; i++) {
+        const span = document.createElement('span');
+        span.textContent = word[i];
+        span.className = 'splash-letter';
+        span.style.animationDelay = `${i * 0.1}s`;
+        lettersContainer.appendChild(span);
     }
-    const curve = new THREE.CatmullRomCurve3(points);
-    const tubeGeo = new THREE.TubeGeometry(curve, 300, 0.08, 12, false);
-    // Carregar textura do fio (opcional)
-    let yarnMaterial;
-    const yarnTextureLoader = new THREE.TextureLoader();
-    yarnTextureLoader.load(textureUrls.yarnPattern, (tex) => {
-        tex.wrapS = THREE.RepeatWrapping;
-        tex.wrapT = THREE.RepeatWrapping;
-        tex.repeat.set(2, 1);
-        yarnMaterial = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8, metalness: 0.1 });
-        yarnMesh.material = yarnMaterial;
-    }, undefined, () => {
-        // fallback
-        yarnMaterial = new THREE.MeshStandardMaterial({ color: 0xFDF6E3, roughness: 0.95 });
-        yarnMesh.material = yarnMaterial;
-    });
-    const yarnMesh = new THREE.Mesh(tubeGeo, new THREE.MeshStandardMaterial({ color: 0xFDF6E3, roughness: 0.95 }));
-    scene.add(yarnMesh);
-    const totalYarnIndices = tubeGeo.index.count;
-    tubeGeo.setDrawRange(0, 0);
+    setTimeout(() => {
+        document.getElementById('loader-sub').classList.add('opacity-100');
+        const pop = document.getElementById('pop-sound');
+        pop.play().catch(e => console.log("Som não pôde ser reproduzido automaticamente"));
+        setTimeout(() => {
+            gsap.to(loaderOverlay, { opacity: 0, duration: 0.8, onComplete: () => {
+                loaderOverlay.style.display = 'none';
+                document.body.style.overflow = '';
+                document.getElementById('main-content').style.display = 'block';
+                initHero3D();
+                initSauce3D();
+            }});
+        }, 800);
+    }, 800);
 
-    // --- Carregar modelo e aplicar texturas ---
-    const loader = new GLTFLoader();
-    loader.load(modelPath,
-        (gltf) => {
-            const model = gltf.scene;
-            // Ajustar escala
-            const box = new THREE.Box3().setFromObject(model);
-            const size = box.getSize(new THREE.Vector3());
-            const targetHeight = 4.2;
-            const scaleFactor = targetHeight / size.y;
-            model.scale.set(scaleFactor, scaleFactor, scaleFactor);
-            const newBox = new THREE.Box3().setFromObject(model);
-            const minY = newBox.min.y;
-            model.position.y = -minY - 0.65;
+    // --- HERO 3D (Garrafa Heinz) ---
+    let heroScene, heroCamera, heroRenderer, heroModel, heroParticles;
+    function initHero3D() {
+        const canvas = document.getElementById('hero-canvas');
+        heroScene = new THREE.Scene();
+        heroScene.background = new THREE.Color(0x050505);
+        heroCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        heroCamera.position.set(0, 2, 8);
+        heroRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+        heroRenderer.setSize(window.innerWidth, window.innerHeight);
+        heroRenderer.setPixelRatio(window.devicePixelRatio);
 
-            // Carregar textura do rótulo
-            const labelTexLoader = new THREE.TextureLoader();
-            labelTexLoader.load(textureUrls.labelFront, (tex) => {
-                labelTexture = tex;
-                tex.wrapS = THREE.RepeatWrapping;
-                tex.wrapT = THREE.RepeatWrapping;
-                tex.repeat.set(1, 1);
-            });
+        // Luzes
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        heroScene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+        dirLight.position.set(3, 5, 2);
+        heroScene.add(dirLight);
+        const backLight = new THREE.PointLight(0xffaa66, 0.5);
+        backLight.position.set(0, 1, -3);
+        heroScene.add(backLight);
 
-            model.traverse((child) => {
-                if (child.isMesh) {
-                    const nome = child.name.toLowerCase();
-                    // Corpo de vidro
-                    if (nome.includes('jar') || nome.includes('body') || nome.includes('glass') || nome.includes('pote') ||
-                        (!nome.includes('lid') && !nome.includes('tampa') && !nome.includes('cap') && !nome.includes('label') && !nome.includes('rotulo'))) {
-                        const glassMat = new THREE.MeshPhysicalMaterial({
-                            color: 0xc8e4ff,
-                            metalness: 1.0,
-                            roughness: 0.12,
-                            clearcoat: 1.0,
-                            clearcoatRoughness: 0.05,
-                            reflectivity: 0.5,
-                            ior: 1.5,
-                            transmission: 0.85,
-                            thickness: 0.5,
-                            envMap: envMap,
-                            envMapIntensity: 1.2,
-                            transparent: true,
-                            side: THREE.DoubleSide
-                        });
-                        child.material = glassMat;
-                    }
-                    // Tampa azul Heinz
-                    else if (nome.includes('lid') || nome.includes('tampa') || nome.includes('cap')) {
-                        const lidMat = new THREE.MeshStandardMaterial({
-                            color: 0x1E3FFF,
-                            roughness: 0.4,
-                            metalness: 0.2,
-                            emissive: 0x001133,
-                            emissiveIntensity: 0.1
-                        });
-                        child.material = lidMat;
-                    }
-                    // Rótulo (aplica textura)
-                    else if (nome.includes('label') || nome.includes('rotulo') || nome.includes('sticker')) {
-                        if (labelTexture) {
-                            const labelMat = new THREE.MeshStandardMaterial({
-                                map: labelTexture,
-                                color: 0xffffff,
-                                roughness: 0.3,
-                                metalness: 0.05
-                            });
-                            child.material = labelMat;
-                        } else {
-                            // fallback vermelho
-                            const fallbackMat = new THREE.MeshStandardMaterial({ color: 0xFF1E1E, roughness: 0.5 });
-                            child.material = fallbackMat;
-                        }
-                    }
-                    // Conteúdo interno (maionese)
-                    else if (nome.includes('mayo') || nome.includes('content') || nome.includes('filling')) {
-                        const mayoMat = new THREE.MeshStandardMaterial({
-                            color: 0xFFF4C0,
-                            emissive: 0xFFCC88,
-                            emissiveIntensity: 0.2,
-                            roughness: 0.6
-                        });
-                        child.material = mayoMat;
-                    }
-                    else {
-                        const defaultMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.5 });
-                        child.material = defaultMat;
-                    }
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                }
-            });
-
-            poteGroup = model;
-            poteWrapper.add(poteGroup);
-            document.getElementById('loading-status').textContent = '✅ Modelo carregado!';
-            setTimeout(() => {
-                document.getElementById('loading-status').style.opacity = '0';
-            }, 2000);
-        },
-        (xhr) => {
-            const percent = Math.floor((xhr.loaded / xhr.total) * 100);
-            document.getElementById('loading-status').textContent = `🔄 Carregando modelo: ${percent}%`;
-        },
-        (error) => {
-            console.error(error);
-            document.getElementById('loading-status').innerHTML = '❌ Erro: modelo não encontrado.';
-        }
-    );
-
-    // --- Controles ---
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableZoom = false;
-    controls.enablePan = false;
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-
-    // --- Animações com Scroll ---
-    const animProps = { drawProgress: 0, jarRotation: 0 };
-    const tl = gsap.timeline({
-        scrollTrigger: {
-            trigger: "#hero-section",
-            start: "top top",
-            end: "bottom bottom",
-            scrub: 1
-        }
-    });
-    tl.to(animProps, {
-        drawProgress: 1,
-        ease: "none",
-        onUpdate: () => {
-            const drawCount = Math.floor(totalYarnIndices * animProps.drawProgress);
-            tubeGeo.setDrawRange(0, drawCount);
-        }
-    }, 0);
-    tl.to(animProps, {
-        jarRotation: Math.PI * 2,
-        ease: "none",
-        onUpdate: () => {
-            if (poteWrapper) poteWrapper.rotation.y = animProps.jarRotation;
-        }
-    }, 0);
-
-    // UI
-    gsap.set("#hero-title", { y: 200, opacity: 0 });
-    tl.to("#hero-title", { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, 0.2);
-    tl.to("#hero-subtitle", { opacity: 1, y: -15, duration: 0.3, ease: "power2.out" }, 0.5);
-    tl.to("#cta-button", { opacity: 1, y: -20, duration: 0.4 }, 0.7);
-    tl.to("#scroll-indicator", { opacity: 0, duration: 0.1 }, 0);
-
-    // --- Mouse parallax ---
-    let mouseX = 0, mouseY = 0;
-    document.addEventListener('mousemove', (e) => {
-        mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-        mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-    });
-
-    // --- Partículas de crochê flutuantes (simulação) ---
-    const particleCount = 80;
-    const particleGeo = new THREE.BufferGeometry();
-    const particlePositions = new Float32Array(particleCount * 3);
-    for (let i = 0; i < particleCount; i++) {
-        particlePositions[i*3] = (Math.random() - 0.5) * 20;
-        particlePositions[i*3+1] = (Math.random() - 0.5) * 8 + 2;
-        particlePositions[i*3+2] = (Math.random() - 0.5) * 15 - 5;
-    }
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-    const particleTexture = new THREE.TextureLoader().load(textureUrls.crochetParticle, undefined, undefined, () => {});
-    const particleMat = new THREE.PointsMaterial({
-        color: 0xFFDDAA,
-        size: 0.08,
-        map: particleTexture,
-        transparent: true,
-        blending: THREE.AdditiveBlending
-    });
-    const particleSystem = new THREE.Points(particleGeo, particleMat);
-    scene.add(particleSystem);
-
-    function animateParticles() {
-        const positions = particleSystem.geometry.attributes.position.array;
+        // Partículas vermelhas (ketchup)
+        const particleCount = 800;
+        const particleGeo = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
         for (let i = 0; i < particleCount; i++) {
-            positions[i*3+1] += 0.003;
-            if (positions[i*3+1] > 4.5) positions[i*3+1] = -1.5;
-            positions[i*3] += (Math.random() - 0.5) * 0.01;
-            positions[i*3+2] += (Math.random() - 0.5) * 0.01;
+            positions[i*3] = (Math.random() - 0.5) * 20;
+            positions[i*3+1] = (Math.random() - 0.5) * 12;
+            positions[i*3+2] = (Math.random() - 0.5) * 15 - 5;
         }
-        particleSystem.geometry.attributes.position.needsUpdate = true;
-        requestAnimationFrame(animateParticles);
-    }
-    animateParticles();
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const particleMat = new THREE.PointsMaterial({ color: 0xff3333, size: 0.08, transparent: true, blending: THREE.AdditiveBlending });
+        heroParticles = new THREE.Points(particleGeo, particleMat);
+        heroScene.add(heroParticles);
 
-    // --- Animação principal ---
-    function animate() {
-        requestAnimationFrame(animate);
-        if (poteWrapper) {
-            poteWrapper.rotation.x += (mouseY * 0.15 - poteWrapper.rotation.x) * 0.05;
-            poteWrapper.position.x += (mouseX * 0.6 - poteWrapper.position.x) * 0.05;
-            yarnMesh.position.x = poteWrapper.position.x;
-            yarnMesh.rotation.x = poteWrapper.rotation.x;
-            yarnMesh.rotation.y = poteWrapper.rotation.y;
+        // Carregar modelo GLB
+        const loader = new GLTFLoader();
+        loader.load('/static/pote_maionese.glb.glb', (gltf) => {
+            heroModel = gltf.scene;
+            heroModel.scale.set(1.2, 1.2, 1.2);
+            heroModel.position.y = -1;
+            heroScene.add(heroModel);
+        }, undefined, (err) => console.error('Erro ao carregar modelo:', err));
+
+        // Animação
+        let time = 0;
+        function animateHero() {
+            requestAnimationFrame(animateHero);
+            time += 0.01;
+            if (heroModel) heroModel.rotation.y = Math.sin(time * 0.5) * 0.2;
+            heroParticles.rotation.y += 0.005;
+            heroParticles.rotation.x += 0.003;
+            heroRenderer.render(heroScene, heroCamera);
         }
-        controls.update();
-        renderer.render(scene, camera);
-    }
-    animate();
+        animateHero();
 
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        // Mouse parallax
+        window.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth) * 2 - 1;
+            const y = (e.clientY / window.innerHeight) * 2 - 1;
+            heroCamera.position.x += (x * 0.5 - heroCamera.position.x) * 0.05;
+            heroCamera.position.y += (-y * 0.3 - heroCamera.position.y) * 0.05;
+            heroCamera.lookAt(0, 0, 0);
+        });
+
+        // Animação de entrada dos textos
+        gsap.to("#hero-title-main", { opacity: 1, y: 0, duration: 1, delay: 0.5 });
+        gsap.to("#hero-sub-main", { opacity: 1, y: 0, duration: 1, delay: 0.8 });
+    }
+
+    // --- DESAFIO DEV: VISUALIZAÇÃO 3D DO MOLHO ---
+    let sauceScene, sauceCamera, sauceRenderer, sauceCube;
+    function initSauce3D() {
+        const canvas = document.getElementById('sauce-canvas');
+        sauceScene = new THREE.Scene();
+        sauceScene.background = new THREE.Color(0x111111);
+        sauceCamera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
+        sauceCamera.position.set(0, 0, 3);
+        sauceRenderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+        sauceRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        const geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+        const material = new THREE.MeshStandardMaterial({ color: 0xff3333, roughness: 0.3 });
+        sauceCube = new THREE.Mesh(geometry, material);
+        sauceScene.add(sauceCube);
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(2, 2, 2);
+        sauceScene.add(light);
+        const ambient = new THREE.AmbientLight(0x404040);
+        sauceScene.add(ambient);
+        function animate() {
+            requestAnimationFrame(animate);
+            sauceCube.rotation.x += 0.01;
+            sauceCube.rotation.y += 0.01;
+            sauceRenderer.render(sauceScene, sauceCamera);
+        }
+        animate();
+    }
+
+    document.getElementById('run-code').addEventListener('click', () => {
+        const code = document.getElementById('code-editor').value;
+        try {
+            // Avaliar o código (simples, seguro para demonstração)
+            const func = new Function('color', 'viscosity', 'flavor', `return { color, viscosity, flavor };`);
+            // Extrair variáveis do código (simplificado)
+            const colorMatch = code.match(/color\s*=\s*\[(\d+),\s*(\d+),\s*(\d+)\]/);
+            const viscosityMatch = code.match(/viscosity\s*=\s*([\d.]+)/);
+            const flavorMatch = code.match(/flavor\s*=\s*['"]([^'"]+)['"]/);
+            if (colorMatch) {
+                const r = parseInt(colorMatch[1]) / 255;
+                const g = parseInt(colorMatch[2]) / 255;
+                const b = parseInt(colorMatch[3]) / 255;
+                sauceCube.material.color.setRGB(r, g, b);
+            }
+            if (viscosityMatch) {
+                const vis = parseFloat(viscosityMatch[1]);
+                sauceCube.material.roughness = Math.max(0.1, Math.min(0.9, 1 - vis));
+            }
+            if (flavorMatch) {
+                document.getElementById('sauce-flavor').innerHTML = `🍅 Sabor: ${flavorMatch[1]}`;
+            } else {
+                document.getElementById('sauce-flavor').innerHTML = '';
+            }
+        } catch(e) {
+            console.error(e);
+            alert('Erro no código! Tente um exemplo válido.');
+        }
     });
 
-    // --- Interação do botão de download (simulação) ---
-    document.getElementById('download-pdf').addEventListener('click', (e) => {
+    document.getElementById('share-code').addEventListener('click', () => {
+        const code = document.getElementById('code-editor').value;
+        const tweetText = `Acabei de criar um molho personalizado no Heinz Labs! Confira minha receita:\n\n${code.substring(0, 200)}\n\n#HeinzLabs #DevExperience @Heinz @heinz_brasil`;
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`, '_blank');
+    });
+
+    // --- FORMULÁRIO 3D (captura lead) ---
+    document.getElementById('lead-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        alert('📥 Link para download do PDF aparecerá aqui. Você pode substituir por um link real.');
+        const formData = new FormData(e.target);
+        try {
+            // Simular envio (substitua pela URL real de captura)
+            await fetch('/{{ loja.slug_url }}/captura-lead', { method: 'POST', body: formData });
+            document.getElementById('form-success').classList.remove('hidden');
+            e.target.reset();
+            // Confete de partículas
+            for (let i = 0; i < 100; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.width = '6px';
+                particle.style.height = '6px';
+                particle.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                particle.style.borderRadius = '50%';
+                particle.style.left = `${Math.random() * window.innerWidth}px`;
+                particle.style.top = `${window.innerHeight}px`;
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '9999';
+                document.body.appendChild(particle);
+                gsap.to(particle, { y: -Math.random() * 500, x: (Math.random() - 0.5) * 200, duration: 1, ease: "power2.out", onComplete: () => particle.remove() });
+            }
+        } catch(err) {
+            alert('Erro ao enviar. Tente novamente.');
+        }
     });
+
+    // --- EFEITO CORTINAS NO VÍDEO ---
+    setTimeout(() => {
+        const leftCurtain = document.getElementById('curtain-left');
+        const rightCurtain = document.getElementById('curtain-right');
+        if (leftCurtain && rightCurtain) {
+            gsap.to(leftCurtain, { x: '-100%', duration: 1.2, delay: 0.5 });
+            gsap.to(rightCurtain, { x: '100%', duration: 1.2, delay: 0.5 });
+        }
+    }, 500);
+
+    // --- MARQUEE DUPLICADO AUTOMATICAMENTE ---
+    const marquee = document.querySelector('.client-marquee-track');
+    const clone = marquee.cloneNode(true);
+    marquee.parentNode.appendChild(clone);
+
+    // --- FOOTER ANIMADO (frases dinâmicas) ---
+    const footerPhrases = [
+        "Vamos criar algo junto com a <span class='text-[var(--heinz-red)]'>Heinz</span>?",
+        "A inovação começa aqui.",
+        "Código aberto para o futuro do sabor.",
+        "Junte-se à revolução Heinz Labs."
+    ];
+    let phraseIndex = 0;
+    setInterval(() => {
+        phraseIndex = (phraseIndex + 1) % footerPhrases.length;
+        gsap.to("#footer-heading", { opacity: 0, y: 20, duration: 0.3, onComplete: () => {
+            document.getElementById('footer-heading').innerHTML = footerPhrases[phraseIndex];
+            gsap.to("#footer-heading", { opacity: 1, y: 0, duration: 0.5 });
+        }});
+    }, 4000);
+
+    // --- GLASS TRAIL (efeito de respingo) ---
+    const heroSection = document.getElementById('hero-3d');
+    heroSection.addEventListener('mousemove', (e) => {
+        const trail = document.createElement('div');
+        trail.className = 'glass-trail';
+        trail.style.left = e.clientX + 'px';
+        trail.style.top = e.clientY + 'px';
+        document.body.appendChild(trail);
+        setTimeout(() => {
+            trail.style.transform = 'translate(-50%, -50%) scale(2)';
+            trail.style.opacity = '0';
+            setTimeout(() => trail.remove(), 1200);
+        }, 10);
+    });
+
+    // Inicializar ícones Lucide
+    lucide.createIcons();
 </script>
+
 </body>
 </html>
