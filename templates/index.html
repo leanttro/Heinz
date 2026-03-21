@@ -434,7 +434,7 @@ flavor = 'picante';</textarea>
         heroParticles = new THREE.Points(particleGeo, particleMat);
         heroScene.add(heroParticles);
 
-        // Carregar modelo GLB
+        // Carregar modelo GLB (certifique-se que o arquivo existe em /static/pote_maionese.glb.glb)
         const loader = new GLTFLoader();
         loader.load('/static/pote_maionese.glb.glb', (gltf) => {
             heroModel = gltf.scene;
@@ -500,8 +500,6 @@ flavor = 'picante';</textarea>
     document.getElementById('run-code').addEventListener('click', () => {
         const code = document.getElementById('code-editor').value;
         try {
-            // Avaliar o código (simples, seguro para demonstração)
-            const func = new Function('color', 'viscosity', 'flavor', `return { color, viscosity, flavor };`);
             // Extrair variáveis do código (simplificado)
             const colorMatch = code.match(/color\s*=\s*\[(\d+),\s*(\d+),\s*(\d+)\]/);
             const viscosityMatch = code.match(/viscosity\s*=\s*([\d.]+)/);
@@ -533,13 +531,13 @@ flavor = 'picante';</textarea>
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`, '_blank');
     });
 
-    // --- FORMULÁRIO 3D (captura lead) ---
+    // --- FORMULÁRIO 3D (captura lead) - URL fixa para teste ---
     document.getElementById('lead-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         try {
-            // Simular envio (substitua pela URL real de captura)
-            await fetch('/{{ loja.slug_url }}/captura-lead', { method: 'POST', body: formData });
+            // Substitua a URL pela rota real do seu backend, se existir
+            await fetch('/captura-lead', { method: 'POST', body: formData });
             document.getElementById('form-success').classList.remove('hidden');
             e.target.reset();
             // Confete de partículas
@@ -558,6 +556,7 @@ flavor = 'picante';</textarea>
                 gsap.to(particle, { y: -Math.random() * 500, x: (Math.random() - 0.5) * 200, duration: 1, ease: "power2.out", onComplete: () => particle.remove() });
             }
         } catch(err) {
+            console.error(err);
             alert('Erro ao enviar. Tente novamente.');
         }
     });
@@ -574,8 +573,10 @@ flavor = 'picante';</textarea>
 
     // --- MARQUEE DUPLICADO AUTOMATICAMENTE ---
     const marquee = document.querySelector('.client-marquee-track');
-    const clone = marquee.cloneNode(true);
-    marquee.parentNode.appendChild(clone);
+    if (marquee) {
+        const clone = marquee.cloneNode(true);
+        marquee.parentNode.appendChild(clone);
+    }
 
     // --- FOOTER ANIMADO (frases dinâmicas) ---
     const footerPhrases = [
@@ -609,7 +610,7 @@ flavor = 'picante';</textarea>
     });
 
     // Inicializar ícones Lucide
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 </script>
 
 </body>
