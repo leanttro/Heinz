@@ -19,7 +19,7 @@
     }
     h1, h2 {
         font-family: 'Bebas Neue', cursive;
-        letter-spacing: 0.02em;
+        letter-spacing: -0.02em;
         text-transform: uppercase;
     }
     ::-webkit-scrollbar { width: 8px; }
@@ -205,6 +205,9 @@
     const rimLight = new THREE.PointLight(0x88ccff, 0.6);
     rimLight.position.set(1, 1, 2.5);
     scene.add(rimLight);
+
+    const envMap = null;
+    scene.environment = null;
 
     poteWrapper = new THREE.Group();
     scene.add(poteWrapper);
