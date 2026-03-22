@@ -162,11 +162,10 @@
 
     gsap.registerPlugin(ScrollTrigger);
 
-    // --- Caminhos dos assets (SUBSTITUA PELOS URLs DO CLOUDINARY) ---
     const textureUrls = {
-        labelFront: 'https://res.cloudinary.com/demo/image/upload/v123456/heinz_label.png',   // <-- VOCÊ SUBSTITUI
-        labelBack: 'https://res.cloudinary.com/demo/image/upload/v123456/heinz_back_label.png',
-        yarnPattern: 'https://res.cloudinary.com/demo/image/upload/v123456/yarn_texture.png',
+        labelFront: 'https://res.cloudinary.com/dzcaxmbjn/image/upload/v1774144434/ESTRELA_DO_C%C3%89U_3_bi7qzi.png',
+        labelBack: 'https://res.cloudinary.com/dzcaxmbjn/image/upload/v1774144434/ESTRELA_DO_C%C3%89U_4_bkcrfn.png',
+        yarnPattern: 'https://res.cloudinary.com/dzcaxmbjn/image/upload/v1774144574/Gemini_Generated_Image_xgkbzmxgkbzmxgkb_olyoqo.png',
         crochetParticle: 'https://res.cloudinary.com/demo/image/upload/v123456/crochet_particle.png'
     };
     const modelPath = '/static/pote_maionese.glb.glb';
@@ -175,7 +174,6 @@
     let poteWrapper = null;
     let labelTexture = null;
 
-    // --- Cena Three.js ---
     const canvas = document.getElementById('webgl-canvas');
     const scene = new THREE.Scene();
     scene.background = null;
@@ -190,7 +188,6 @@
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.5;
 
-    // --- Luzes ---
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
@@ -211,17 +208,14 @@
     rimLight.position.set(1, 1, 2.5);
     scene.add(rimLight);
 
-    // --- Cubemap para reflexões ---
     const cubeTextureLoader = new CubeTextureLoader();
     cubeTextureLoader.setPath('https://threejs.org/examples/textures/cube/SwedishRoyal/');
     const envMap = cubeTextureLoader.load(['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg']);
     scene.environment = envMap;
 
-    // --- Grupo do modelo ---
     poteWrapper = new THREE.Group();
     scene.add(poteWrapper);
 
-    // --- FIO DE CROCHÊ (procedural) ---
     const points = [];
     const turns = 8;
     const height = 4.5;
@@ -239,7 +233,6 @@
     }
     const curve = new THREE.CatmullRomCurve3(points);
     const tubeGeo = new THREE.TubeGeometry(curve, 300, 0.08, 12, false);
-    // Carregar textura do fio (opcional)
     let yarnMaterial;
     const yarnTextureLoader = new THREE.TextureLoader();
     yarnTextureLoader.load(textureUrls.yarnPattern, (tex) => {
@@ -249,7 +242,6 @@
         yarnMaterial = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8, metalness: 0.1 });
         yarnMesh.material = yarnMaterial;
     }, undefined, () => {
-        // fallback
         yarnMaterial = new THREE.MeshStandardMaterial({ color: 0xFDF6E3, roughness: 0.95 });
         yarnMesh.material = yarnMaterial;
     });
@@ -258,12 +250,10 @@
     const totalYarnIndices = tubeGeo.index.count;
     tubeGeo.setDrawRange(0, 0);
 
-    // --- Carregar modelo e aplicar texturas ---
     const loader = new GLTFLoader();
     loader.load(modelPath,
         (gltf) => {
             const model = gltf.scene;
-            // Ajustar escala
             const box = new THREE.Box3().setFromObject(model);
             const size = box.getSize(new THREE.Vector3());
             const targetHeight = 4.2;
@@ -273,7 +263,6 @@
             const minY = newBox.min.y;
             model.position.y = -minY - 0.65;
 
-            // Carregar textura do rótulo
             const labelTexLoader = new THREE.TextureLoader();
             labelTexLoader.load(textureUrls.labelFront, (tex) => {
                 labelTexture = tex;
@@ -285,7 +274,6 @@
             model.traverse((child) => {
                 if (child.isMesh) {
                     const nome = child.name.toLowerCase();
-                    // Corpo de vidro
                     if (nome.includes('jar') || nome.includes('body') || nome.includes('glass') || nome.includes('pote') ||
                         (!nome.includes('lid') && !nome.includes('tampa') && !nome.includes('cap') && !nome.includes('label') && !nome.includes('rotulo'))) {
                         const glassMat = new THREE.MeshPhysicalMaterial({
@@ -305,10 +293,9 @@
                         });
                         child.material = glassMat;
                     }
-                    // Tampa azul Heinz
                     else if (nome.includes('lid') || nome.includes('tampa') || nome.includes('cap')) {
                         const lidMat = new THREE.MeshStandardMaterial({
-                            color: 0x1E3FFF,
+                            color: 0x000637,
                             roughness: 0.4,
                             metalness: 0.2,
                             emissive: 0x001133,
@@ -316,7 +303,6 @@
                         });
                         child.material = lidMat;
                     }
-                    // Rótulo (aplica textura)
                     else if (nome.includes('label') || nome.includes('rotulo') || nome.includes('sticker')) {
                         if (labelTexture) {
                             const labelMat = new THREE.MeshStandardMaterial({
@@ -327,15 +313,13 @@
                             });
                             child.material = labelMat;
                         } else {
-                            // fallback vermelho
                             const fallbackMat = new THREE.MeshStandardMaterial({ color: 0xFF1E1E, roughness: 0.5 });
                             child.material = fallbackMat;
                         }
                     }
-                    // Conteúdo interno (maionese)
                     else if (nome.includes('mayo') || nome.includes('content') || nome.includes('filling')) {
                         const mayoMat = new THREE.MeshStandardMaterial({
-                            color: 0xFFF4C0,
+                            color: 0xf4e1c1,
                             emissive: 0xFFCC88,
                             emissiveIntensity: 0.2,
                             roughness: 0.6
@@ -368,14 +352,12 @@
         }
     );
 
-    // --- Controles ---
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableZoom = false;
     controls.enablePan = false;
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
 
-    // --- Animações com Scroll ---
     const animProps = { drawProgress: 0, jarRotation: 0 };
     const tl = gsap.timeline({
         scrollTrigger: {
@@ -401,21 +383,18 @@
         }
     }, 0);
 
-    // UI
     gsap.set("#hero-title", { y: 200, opacity: 0 });
     tl.to("#hero-title", { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, 0.2);
     tl.to("#hero-subtitle", { opacity: 1, y: -15, duration: 0.3, ease: "power2.out" }, 0.5);
     tl.to("#cta-button", { opacity: 1, y: -20, duration: 0.4 }, 0.7);
     tl.to("#scroll-indicator", { opacity: 0, duration: 0.1 }, 0);
 
-    // --- Mouse parallax ---
     let mouseX = 0, mouseY = 0;
     document.addEventListener('mousemove', (e) => {
         mouseX = (e.clientX / window.innerWidth) * 2 - 1;
         mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
     });
 
-    // --- Partículas de crochê flutuantes (simulação) ---
     const particleCount = 80;
     const particleGeo = new THREE.BufferGeometry();
     const particlePositions = new Float32Array(particleCount * 3);
@@ -449,7 +428,6 @@
     }
     animateParticles();
 
-    // --- Animação principal ---
     function animate() {
         requestAnimationFrame(animate);
         if (poteWrapper) {
@@ -470,7 +448,6 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // --- Interação do botão de download (simulação) ---
     document.getElementById('download-pdf').addEventListener('click', (e) => {
         e.preventDefault();
         alert('📥 Link para download do PDF aparecerá aqui. Você pode substituir por um link real.');
