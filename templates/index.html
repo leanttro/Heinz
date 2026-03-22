@@ -167,7 +167,7 @@
         labelFront: 'https://res.cloudinary.com/dzcaxmbjn/image/upload/v1774144434/ESTRELA_DO_C%C3%89U_3_bi7qzi.png',   // <-- VOCÊ SUBSTITUI
         labelBack: 'https://res.cloudinary.com/dzcaxmbjn/image/upload/v1774144434/ESTRELA_DO_C%C3%89U_4_bkcrfn.png',
         yarnPattern: 'https://res.cloudinary.com/dzcaxmbjn/image/upload/v1774144574/Gemini_Generated_Image_xgkbzmxgkbzmxgkb_olyoqo.png',
-        crochetParticle: 'https://res.cloudinary.com/demo/image/upload/v123456/crochet_particle.png'
+        crochetParticle: ''
     };
     const modelPath = '/static/pote_maionese.glb.glb';
 
@@ -212,10 +212,8 @@
     scene.add(rimLight);
 
     // --- Cubemap para reflexões ---
-    const cubeTextureLoader = new CubeTextureLoader();
-    cubeTextureLoader.setPath('https://threejs.org/examples/textures/cube/SwedishRoyal/');
-    const envMap = cubeTextureLoader.load(['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg']);
-    scene.environment = envMap;
+    const envMap = null;
+    scene.environment = null;
 
     // --- Grupo do modelo ---
     poteWrapper = new THREE.Group();
@@ -425,11 +423,10 @@
         particlePositions[i*3+2] = (Math.random() - 0.5) * 15 - 5;
     }
     particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-    const particleTexture = new THREE.TextureLoader().load(textureUrls.crochetParticle, undefined, undefined, () => {});
     const particleMat = new THREE.PointsMaterial({
         color: 0xFFDDAA,
         size: 0.08,
-        map: particleTexture,
+        map: null,
         transparent: true,
         blending: THREE.AdditiveBlending
     });
